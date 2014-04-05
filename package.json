@@ -1,0 +1,24 @@
+{
+  "name": "simpleini",
+  "version": "0.0.6",
+  "description": "A simple ini file reader for node.js. (Under miniini-0.9)",
+  "main": "index.js",
+  "scripts": {
+    "test": "node initest.js",
+    "install": "node-gyp rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/XadillaX/node-simple-ini.git"
+  },
+  "keywords": [
+    "ini"
+  ],
+  "author": "XadillaX",
+  "license": "MIT",
+  "gypfile": true,
+  "bugs": {
+    "url": "https://github.com/XadillaX/node-simple-ini/issues"
+  },
+  "homepage": "https://github.com/XadillaX/node-simple-ini"
+}
