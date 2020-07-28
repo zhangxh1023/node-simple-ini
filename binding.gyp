@@ -10,6 +10,9 @@
         "src/miniini-0.9/miniini/src/inisection.cpp",
         "src/miniini-0.9/miniini/src/log.cpp",
         "src/simpleIni.cc"
+      ],
+      "include_dirs": [
+        "<!(node -e \"require('nan')\")"
       ]
     }
   ]

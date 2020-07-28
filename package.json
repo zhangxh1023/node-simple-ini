@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/XadillaX/node-simple-ini/issues"
   },
-  "homepage": "https://github.com/XadillaX/node-simple-ini"
+  "homepage": "https://github.com/XadillaX/node-simple-ini",
+  "devDependencies": {
+    "nan": "^2.14.1"
+  }
 }
