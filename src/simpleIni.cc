@@ -4,89 +4,93 @@
 INIFile file;
 namespace __simple_ini__
 {
-  using namespace v8;
-  NAN_METHOD(Open)
-  {
-    Isolate *isolate = info.GetIsolate();
-    if (info.Length() < 1)
+    using v8::Isolate;
+    using v8::Local;
+    NAN_METHOD(Open)
     {
-      Nan::ThrowTypeError("Wrong number of arguments.");
-      return;
-    }
-    if (!info[0]->IsString())
-    {
-      Nan::ThrowTypeError("The first argument must be a string.");
-      return;
-    }
-    char *filename = new char[Local<String>::Cast(info[0])->Length() + 1];
-    Local<String>::Cast(info[0])->WriteUtf8(isolate, filename);
-    Local<Value> res = Local<Value>::New(isolate, Nan::New<Boolean>(file.OpenFile(filename)));
+        Isolate *isolate = info.GetIsolate();
+        if (info.Length() < 1)
+        {
+            Nan::ThrowTypeError("Wrong number of arguments.");
+            return;
+        }
+        if (!info[0]->IsString())
+        {
+            Nan::ThrowTypeError("The first argument must be a string.");
+            return;
+        }
+        Local<v8::String> filename_handle = Nan::To<v8::String>(info[0]).ToLocalChecked();
+        char *filename = new char[filename_handle->Length() + 1];
+        filename_handle->WriteUtf8(isolate, filename);
+        Local<v8::Value> ret = Nan::New<v8::Value>(Nan::New(file.OpenFile(filename)));
 
-    delete[] filename;
+        delete[] filename;
 
-    return info.GetReturnValue().Set(res);
-  }
-
-  NAN_METHOD(Read)
-  {
-    Isolate *isolate = info.GetIsolate();
-    if (info.Length() < 2)
-    {
-      Nan::ThrowTypeError("Wrong number of arguments.");
-      return;
+        return info.GetReturnValue().Set(ret);
     }
 
-    if (!info[0]->IsString() || !info[1]->IsString())
+    NAN_METHOD(Read)
     {
-      Nan::ThrowTypeError("The first and second arguments must be string.");
+        Isolate *isolate = info.GetIsolate();
+        if (info.Length() < 2)
+        {
+            Nan::ThrowTypeError("Wrong number of arguments.");
+            return;
+        }
+
+        if (!info[0]->IsString() || !info[1]->IsString())
+        {
+            Nan::ThrowTypeError("The first and second arguments must be string.");
+        }
+
+        Local<v8::String> sectionName_handle = Nan::To<v8::String>(info[0]).ToLocalChecked();
+        Local<v8::String> name_handle = Nan::To<v8::String>(info[1]).ToLocalChecked();
+        char *sectionName = new char[sectionName_handle->Length() + 1];
+        char *name = new char[name_handle->Length() + 1];
+
+        sectionName_handle->WriteUtf8(isolate, sectionName);
+        name_handle->WriteUtf8(isolate, name);
+
+        INISection *section = file.GetSection(sectionName);
+        if (!section)
+        {
+            delete[] sectionName;
+            delete[] name;
+
+            if (info.Length() >= 3)
+            {
+                return info.GetReturnValue().Set(info[2]);
+            }
+            else
+            {
+                return info.GetReturnValue().Set(Nan::EmptyString());
+            }
+        }
+
+        const char *value;
+        if (!section->ReadString(name, value))
+        {
+            delete[] sectionName;
+            delete[] name;
+
+            if (info.Length() >= 3)
+            {
+                return info.GetReturnValue().Set(info[2]);
+            }
+            else
+            {
+                return info.GetReturnValue().Set(Nan::EmptyString());
+            }
+        }
+        return info.GetReturnValue().Set(Nan::New<v8::String>(value).ToLocalChecked());
     }
 
-    char *sectionName = new char[Local<String>::Cast(info[0])->Length() + 1];
-    char *name = new char[Local<String>::Cast(info[1])->Length() + 1];
-
-    Local<String>::Cast(info[0])->WriteUtf8(isolate, sectionName);
-    Local<String>::Cast(info[1])->WriteUtf8(isolate, name);
-
-    INISection *section = file.GetSection(sectionName);
-    if (!section)
+    NAN_MODULE_INIT(Init)
     {
-      delete[] sectionName;
-      delete[] name;
-
-      if (info.Length() >= 3)
-      {
-        return info.GetReturnValue().Set(info[2]);
-      }
-      else
-      {
-        return info.GetReturnValue().Set(Nan::EmptyString());
-      }
+        Nan::Export(target, "read", Read);
+        Nan::Export(target, "open", Open);
     }
 
-    const char *value;
-    if (!section->ReadString(name, value))
-    {
-      delete[] sectionName;
-      delete[] name;
-
-      if (info.Length() >= 3)
-      {
-        return info.GetReturnValue().Set(info[2]);
-      }
-      else
-      {
-        return info.GetReturnValue().Set(Nan::EmptyString());
-      }
-    }
-    return info.GetReturnValue().Set(Nan::New<String>(value).ToLocalChecked());
-  }
-
-  NAN_MODULE_INIT(Init)
-  {
-    Nan::Export(target, "read", Read);
-    Nan::Export(target, "open", Open);
-  }
-
-  NODE_MODULE(SimpleIni, Init)
+    NODE_MODULE(SimpleIni, Init)
 
 } // namespace __simple_ini__
